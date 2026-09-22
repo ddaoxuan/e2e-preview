@@ -31,6 +31,18 @@ jobs:
       contents: read
       statuses: write
     steps:
+      - name: Report E2E pending on the preview commit
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.payload.client_payload.git.sha,
+              context: 'E2E / Preview',
+              state: 'pending',
+              description: 'Running Playwright against the preview deployment',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
       - uses: vercel/repository-dispatch/actions/checkout@v1
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -48,3 +60,28 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+  report-e2e:
+    needs: [resolve-pr, e2e]
+    if: ${{ always() && needs.resolve-pr.outputs.number != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Report E2E result on the preview commit
+        uses: actions/github-script@v7
+        env:
+          E2E_RESULT: ${{ needs.e2e.result }}
+        with:
+          script: |
+            const result = process.env.E2E_RESULT;
+            const state = result === 'success' ? 'success'
+              : result === 'failure' ? 'failure' : 'error';
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.payload.client_payload.git.sha,
+              context: 'E2E / Preview',
+              state,
+              description: `Preview E2E job: ${result}`,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });

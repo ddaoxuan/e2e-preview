@@ -56,3 +56,7 @@ BASE_URL=https://your-preview.vercel.app pnpm test:e2e
 `BASE_URL` must be a full URL, including the scheme. Remote deployments must be accessible to the test runner; deployment-protection authentication is not configured by this example. Keep the preview and test checkout on the same revision.
 
 The existing `.github/workflows/e2e.yaml` runs on Vercel's `vercel.deployment.ready` repository dispatch for previews associated with an open PR. It installs pnpm dependencies and Chromium, passes the deployment URL as `BASE_URL`, and uploads the HTML report. CI retries failures twice and records a trace on the first retry; failure screenshots and traces are available in the report. The Vercel repository-dispatch integration must be configured separately.
+
+The workflow publishes an `E2E / Preview` commit status on the deployed commit so it appears on the matching PR. It starts as pending and links to the Actions run; a separate reporting job publishes success, failure, or error (for a cancelled/skipped E2E job). Setup and artifact-upload failures also fail the status. GitHub's native workflow checks remain attached to the default-branch commit because this uses `repository_dispatch`.
+
+Workflow changes must land on the default branch (`main`) before a new deployment-ready event will use them. Updating only the PR branch or rerunning an old run does not activate the new workflow.
