@@ -1,0 +1,35 @@
+name: E2E
+
+on:
+  repository_dispatch:
+    types: ['vercel.deployment.ready']
+
+jobs:
+  resolve-pr:
+    if: github.event.client_payload.environment == 'preview'
+    runs-on: ubuntu-latest
+    outputs:
+      number: ${{ steps.pr.outputs.number }}
+    steps:
+      - id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.client_payload.git.sha }}
+        run: |
+          n=$(gh api "repos/${{ github.repository }}/commits/$SHA/pulls" \
+                --jq 'map(select(.state=="open")) | .[0].number // empty')
+          echo "number=$n" >> "$GITHUB_OUTPUT"
+
+  e2e:
+    needs: resolve-pr
+    if: needs.resolve-pr.outputs.number != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: vercel/repository-dispatch/actions/checkout@v1
+      - run: npm ci && npx playwright install --with-deps
+      - run: npx playwright test
+        env:
+          BASE_URL: ${{ github.event.client_payload.url }}
