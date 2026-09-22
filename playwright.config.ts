@@ -1,6 +1,19 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.BASE_URL || "http://127.0.0.1:3100";
+const bypassSecret = process.env.BASE_URL
+  ? process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+  : undefined;
+
+if (process.env.CI && process.env.BASE_URL && !bypassSecret) {
+  throw new Error(
+    "Set the VERCEL_AUTOMATION_BYPASS_SECRET Actions secret before testing protected previews.",
+  );
+}
+
+if (bypassSecret && new URL(baseURL).protocol !== "https:") {
+  throw new Error("The deployment-protection bypass requires an HTTPS BASE_URL.");
+}
 
 export default defineConfig({
   testDir: "./e2e",
@@ -11,7 +24,14 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
-    trace: "on-first-retry",
+    // Traces record headers; never upload the automation secret in a trace.
+    trace: bypassSecret ? "off" : "on-first-retry",
+    extraHTTPHeaders: bypassSecret
+      ? {
+          "x-vercel-protection-bypass": bypassSecret,
+          "x-vercel-set-bypass-cookie": "true",
+        }
+      : undefined,
     screenshot: "only-on-failure",
   },
   projects: [
