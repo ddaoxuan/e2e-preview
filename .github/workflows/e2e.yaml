@@ -8,6 +8,9 @@ jobs:
   resolve-pr:
     if: github.event.client_payload.environment == 'preview'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       number: ${{ steps.pr.outputs.number }}
     steps:
