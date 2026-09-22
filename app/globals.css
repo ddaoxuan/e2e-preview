@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eef2fa;
+  --foreground: #192c50;
+  --muted: #52627d;
+  --accent: #3158bd;
+  --line: #d7dfed;
+  --paper: #ffffff;
 }
 
 @theme inline {
@@ -12,15 +16,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.launch-page { width: min(100% - 40px, 680px); margin: 72px auto; }
+.page-header { margin-bottom: 32px; }
+.eyebrow { color: var(--accent); font: 12px var(--font-geist-mono), monospace; letter-spacing: .07em; text-transform: uppercase; }
+h1 { margin: 16px 0; font-size: clamp(36px, 7vw, 56px); font-weight: 650; letter-spacing: -.055em; line-height: 1.1; }
+.intro { max-width: 490px; color: var(--muted); line-height: 1.7; }
+.checklist { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 28px; box-shadow: 0 12px 32px #192c5008; }
+.progress-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+h2 { font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
+.progress-header p { color: var(--muted); font: 12px var(--font-geist-mono), monospace; }
+progress { display: block; appearance: none; border: 0; width: 100%; height: 6px; margin: 18px 0 28px; background: var(--background); border-radius: 3px; overflow: hidden; }
+progress::-webkit-progress-bar { background: var(--background); }
+progress::-webkit-progress-value { background: var(--accent); }
+progress::-moz-progress-bar { background: var(--accent); }
+form > label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.form-row { display: flex; gap: 8px; }
+.form-row input { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-size: 16px; }
+.form-row input::placeholder { color: var(--muted); }
+button { cursor: pointer; font-size: 14px; font-weight: 550; }
+.add-button { border-radius: 8px; padding: 12px 18px; background: var(--accent); color: var(--paper); }
+.add-button:hover { background: var(--foreground); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.error { margin-top: 10px; color: #a12431; font-size: 14px; }
+.filters { display: flex; gap: 4px; margin: 28px 0 12px; border-bottom: 1px solid var(--line); }
+.filters button { padding: 12px 14px; color: var(--muted); border-bottom: 2px solid transparent; }
+.filters button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.filters button:hover { background: var(--background); }
+.task-list { list-style: none; }
+.task-list li + li { border-top: 1px solid var(--line); }
+.task { display: flex; align-items: center; gap: 14px; padding: 20px 2px; cursor: pointer; }
+.task input { flex-shrink: 0; width: 20px; height: 20px; accent-color: var(--accent); }
+.task span { overflow-wrap: anywhere; }
+.task.done span { text-decoration: line-through; color: var(--muted); }
+.empty-state { padding: 28px 0; color: var(--muted); line-height: 1.6; }
+footer { margin-top: 24px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+
+@media (max-width: 480px) {
+  .launch-page { margin: 40px auto; }
+  .checklist { padding: 20px; }
+  .form-row { flex-direction: column; }
+  .add-button { min-height: 44px; }
 }
